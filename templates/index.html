@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche Biblique - IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .synthesis-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .synthesis-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .synthesis-icon {
+            font-size: 2em;
+        }
+
+        .synthesis-title {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .synthesis-content {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        .verses-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .verses-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #764ba2;
+        }
+
+        .verse-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .verse-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .verse-reference {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .verse-score {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .verse-text {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .query-display {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-card, .synthesis-card, .verses-card {
+                padding: 20px;
+            }
+
+            .options-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📖 Recherche Biblique avec IA</h1>
+            <p class="subtitle">Explorez la Bible avec l'aide de l'intelligence artificielle</p>
+        </header>
+
+        <div class="search-card">
+            <form class="search-form" id="searchForm">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="queryInput"
+                        placeholder="Ex: la création du monde, l'amour de Dieu, la foi..."
+                        required
+                    >
+                </div>
+
+                <div class="options-row">
+                    <div class="option-group">
+                        <label for="topK">Nombre de versets:</label>
+                        <input type="number" id="topK" value="10" min="1" max="50">
+                    </div>
+
+                    <div class="option-group">
+                        <input type="checkbox" id="showVerses" checked>
+                        <label for="showVerses">Afficher les versets</label>
+                    </div>
+                </div>
+
+                <button type="submit" id="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+
+            <div class="error" id="errorMessage"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: white; font-weight: 500;">Recherche en cours...</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="synthesis-card">
+                <div class="synthesis-header">
+                    <span class="synthesis-icon">🤖</span>
+                    <h2 class="synthesis-title">Synthèse IA</h2>
+                </div>
+                <div class="query-display" id="queryDisplay"></div>
+                <div class="synthesis-content" id="synthesisContent"></div>
+            </div>
+
+            <div class="verses-card" id="versesCard" style="display: none;">
+                <div class="verses-header">
+                    <span class="synthesis-icon">📚</span>
+                    <h2 class="synthesis-title">Versets trouvés (<span id="versesCount">0</span>)</h2>
+                </div>
+                <div id="versesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const queryInput = document.getElementById('queryInput');
+        const topKInput = document.getElementById('topK');
+        const showVersesCheckbox = document.getElementById('showVerses');
+        const searchBtn = document.getElementById('searchBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorMessage = document.getElementById('errorMessage');
+        const synthesisContent = document.getElementById('synthesisContent');
+        const versesList = document.getElementById('versesList');
+        const versesCard = document.getElementById('versesCard');
+        const versesCount = document.getElementById('versesCount');
+        const queryDisplay = document.getElementById('queryDisplay');
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const query = queryInput.value.trim();
+            const topK = parseInt(topKInput.value);
+            const showVerses = showVersesCheckbox.checked;
+
+            if (!query) {
+                showError('Veuillez entrer une recherche');
+                return;
+            }
+
+            // Reset
+            errorMessage.style.display = 'none';
+            results.style.display = 'none';
+            loading.style.display = 'block';
+            searchBtn.disabled = true;
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query, top_k: topK, show_verses: showVerses })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur lors de la recherche');
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.style.display = 'none';
+                searchBtn.disabled = false;
+            }
+        });
+
+        function displayResults(data) {
+            // Afficher la requête
+            queryDisplay.textContent = `Recherche : "${data.query}"`;
+
+            // Afficher la synthèse
+            synthesisContent.textContent = data.synthesis;
+
+            // Afficher les versets si demandé
+            if (data.verses && data.verses.length > 0) {
+                versesCard.style.display = 'block';
+                versesCount.textContent = data.verses.length;
+
+                versesList.innerHTML = data.verses.map(verse => `
+                    <div class="verse-item">
+                        <div class="verse-reference">
+                            <span>${verse.reference}</span>
+                            <span class="verse-score">Score: ${verse.score}</span>
+                        </div>
+                        <div class="verse-text">${verse.text}</div>
+                    </div>
+                `).join('');
+            } else {
+                versesCard.style.display = 'none';
+            }
+
+            results.style.display = 'block';
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Focus sur l'input au chargement
+        queryInput.focus();
+    </script>
+</body>
+</html>
