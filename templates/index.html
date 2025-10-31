@@ -328,10 +328,18 @@
             <div class="synthesis-card">
                 <div class="synthesis-header">
                     <span class="synthesis-icon">🤖</span>
-                    <h2 class="synthesis-title">Synthèse IA</h2>
+                    <h2 class="synthesis-title">Synthèse IA (Français)</h2>
                 </div>
                 <div class="query-display" id="queryDisplay"></div>
                 <div class="synthesis-content" id="synthesisContent"></div>
+            </div>
+
+            <div class="synthesis-card">
+                <div class="synthesis-header">
+                    <span class="synthesis-icon">🇲🇬</span>
+                    <h2 class="synthesis-title">Fandikana amin'ny teny Malagasy</h2>
+                </div>
+                <div class="synthesis-content" id="synthesisMalagasy"></div>
             </div>
 
             <div class="verses-card" id="versesCard" style="display: none;">
@@ -354,6 +362,7 @@
         const results = document.getElementById('results');
         const errorMessage = document.getElementById('errorMessage');
         const synthesisContent = document.getElementById('synthesisContent');
+        const synthesisMalagasy = document.getElementById('synthesisMalagasy');
         const versesList = document.getElementById('versesList');
         const versesCard = document.getElementById('versesCard');
         const versesCount = document.getElementById('versesCount');
@@ -406,8 +415,11 @@
             // Afficher la requête
             queryDisplay.textContent = `Recherche : "${data.query}"`;
 
-            // Afficher la synthèse
+            // Afficher la synthèse française
             synthesisContent.textContent = data.synthesis;
+
+            // Afficher la synthèse malgache
+            synthesisMalagasy.textContent = data.synthesis_malagasy;
 
             // Afficher les versets si demandé
             if (data.verses && data.verses.length > 0) {

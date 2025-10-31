@@ -11,8 +11,7 @@ from qdrant_client import QdrantClient
 import os
 
 # Configuration
-#COHERE_API_KEY = "wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0"
-COHERE_API_KEY = os.environ.get('COHERE_API_KEY', 'wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0')
+COHERE_API_KEY = "wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0"
 COHERE_EMBEDDING_MODEL = "embed-multilingual-v3.0"
 COHERE_GENERATION_MODEL = "command-r-08-2024"
 QDRANT_HOST = "localhost"
@@ -24,14 +23,7 @@ app = Flask(__name__)
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
-#qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
-QDRANT_URL = os.environ.get('QDRANT_URL', 'https://93e9e040-840e-4a40-bab0-4d3074ccea48.europe-west3-0.gcp.cloud.qdrant.io')
-QDRANT_API_KEY = os.environ.get('QDRANT_API_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.-Byh88ThNz3_9eHw_guu2TPzfbWe56DVSnl8nVAFrT8')
-
-qdrant_client = QdrantClient(
-    url=QDRANT_URL,
-    api_key=QDRANT_API_KEY
-)
+qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 
 
 def search_verses(query, top_k=10):
@@ -78,6 +70,29 @@ En te basant uniquement sur ces versets, rédige une synthèse claire et structu
 4. Reste fidèle au texte biblique sans ajouter d'interprétations personnelles
 
 Synthèse :"""
+
+    response = co.chat(
+        model=COHERE_GENERATION_MODEL,
+        message=prompt,
+        temperature=0.3,
+        max_tokens=1000
+    )
+
+    return response.text
+
+
+def translate_to_malagasy(french_text):
+    """Traduit la synthèse en malgache"""
+    prompt = f"""Tu es un traducteur expert français-malgache.
+
+Traduis le texte suivant en malgache (langue de Madagascar).
+Garde les références bibliques en format original (exemple: Genèse 1:1).
+Assure-toi que la traduction soit naturelle et fidèle au sens original.
+
+Texte en français :
+{french_text}
+
+Traduction en malgache :"""
 
     response = co.chat(
         model=COHERE_GENERATION_MODEL,
@@ -156,16 +171,11 @@ if __name__ == '__main__':
     # Créer le dossier templates s'il n'existe pas
     os.makedirs('templates', exist_ok=True)
 
-    # Récupérer le port
-    port = int(os.environ.get('PORT', 5000))
-
-    # Afficher les informations de démarrage
     print("=" * 80)
     print("🌐 Interface Web - Recherche Biblique")
     print("=" * 80)
-    print(f"📍 Serveur démarré sur http://0.0.0.0:{port}")
+    print(f"📍 Serveur démarré sur http://localhost:5000")
     print(f"📊 Collection Qdrant: {COLLECTION_NAME}")
     print("=" * 80)
 
-    # Lancer l'application
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=5000)
