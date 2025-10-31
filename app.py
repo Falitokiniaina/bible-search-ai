@@ -11,7 +11,8 @@ from qdrant_client import QdrantClient
 import os
 
 # Configuration
-COHERE_API_KEY = "wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0"
+#COHERE_API_KEY = "wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0"
+COHERE_API_KEY = os.environ.get('COHERE_API_KEY', 'wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0')
 COHERE_EMBEDDING_MODEL = "embed-multilingual-v3.0"
 COHERE_GENERATION_MODEL = "command-r-08-2024"
 QDRANT_HOST = "localhost"
@@ -23,7 +24,14 @@ app = Flask(__name__)
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
-qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+#qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+QDRANT_URL = os.environ.get('QDRANT_URL', 'https://93e9e040-840e-4a40-bab0-4d3074ccea48.europe-west3-0.gcp.cloud.qdrant.io')
+QDRANT_API_KEY = os.environ.get('QDRANT_API_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.-Byh88ThNz3_9eHw_guu2TPzfbWe56DVSnl8nVAFrT8')
+
+qdrant_client = QdrantClient(
+    url=QDRANT_URL,
+    api_key=QDRANT_API_KEY
+)
 
 
 def search_verses(query, top_k=10):
