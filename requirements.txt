@@ -1,4 +1,4 @@
 flask==3.0.0
-cohere==4.37
-qdrant-client==1.7.0
+cohere==5.11.0
+qdrant-client==1.7.3
 gunicorn==21.2.0
