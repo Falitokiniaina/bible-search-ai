@@ -158,26 +158,42 @@ def search():
         synthesis = generate_synthesis(query, results)
         print(f"✅ Synthèse française générée ({len(synthesis)} caractères)")
 
-        # Traduire en malgache avec timeout
-        print("🔄 Traduction en malgache...")
-        try:
-            synthesis_malagasy = translate_to_malagasy(synthesis)
-            print(f"✅ Traduction malgache générée ({len(synthesis_malagasy) if synthesis_malagasy else 0} caractères)")
-        except Exception as e:
-            print(f"⚠️ Erreur traduction (timeout?): {e}")
-            synthesis_malagasy = "Traduction temporairement indisponible. Réessayez dans quelques instants."
-
+        # Ne pas traduire immédiatement (sera fait dans une 2ème requête)
         return jsonify({
             'success': True,
             'query': query,
             'synthesis': synthesis,
-            'synthesis_malagasy': synthesis_malagasy,
+            'synthesis_malagasy': None,  # Sera rempli par /translate
             'verses': verses if show_verses else [],
             'total_verses': len(verses)
         })
 
     except Exception as e:
         print(f"❌ Erreur dans /search: {e}")
+        return jsonify({'error': f'Erreur: {str(e)}'}), 500
+
+
+@app.route('/translate', methods=['POST'])
+def translate():
+    """Endpoint pour la traduction en malgache (séparé pour éviter timeout)"""
+    try:
+        data = request.json
+        french_text = data.get('text', '').strip()
+
+        if not french_text:
+            return jsonify({'error': 'Texte manquant'}), 400
+
+        print("🔄 Traduction en malgache...")
+        synthesis_malagasy = translate_to_malagasy(french_text)
+        print(f"✅ Traduction générée ({len(synthesis_malagasy)} caractères)")
+
+        return jsonify({
+            'success': True,
+            'translation': synthesis_malagasy
+        })
+
+    except Exception as e:
+        print(f"❌ Erreur traduction: {e}")
         return jsonify({'error': f'Erreur: {str(e)}'}), 500
 
 

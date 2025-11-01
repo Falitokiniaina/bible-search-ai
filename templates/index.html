@@ -319,9 +319,12 @@
             <div class="error" id="errorMessage"></div>
         </div>
 
-        <div class="loading" id="loading">
+                    <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p style="margin-top: 15px; color: white; font-weight: 500;">Recherche en cours...</p>
+            <p style="margin-top: 15px; color: white; font-weight: 500;">
+                🔍 Recherche en cours...<br>
+                <small style="opacity: 0.8;">Génération de la synthèse française</small>
+            </p>
         </div>
 
         <div class="results" id="results">
@@ -387,6 +390,7 @@
             searchBtn.disabled = true;
 
             try {
+                // ÉTAPE 1 : Recherche + Synthèse française
                 const response = await fetch('/search', {
                     method: 'POST',
                     headers: {
@@ -401,7 +405,42 @@
                     throw new Error(data.error || 'Erreur lors de la recherche');
                 }
 
+                console.log("📦 Données reçues (étape 1):", data);
+
+                // Afficher les résultats immédiatement (sans traduction)
                 displayResults(data);
+
+                // ÉTAPE 2 : Traduction en malgache (en arrière-plan)
+                if (data.synthesis) {
+                    // Afficher un message de chargement pour la traduction
+                    synthesisMalagasy.innerHTML = '<em style="color: #999;">⏳ Traduction en cours...</em>';
+
+                    try {
+                        const translateResponse = await fetch('/translate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ text: data.synthesis })
+                        });
+
+                        const translateData = await translateResponse.json();
+
+                        if (translateResponse.ok && translateData.translation) {
+                            console.log("🇲🇬 Traduction reçue");
+                            synthesisMalagasy.textContent = translateData.translation;
+                        } else {
+                            throw new Error(translateData.error || 'Erreur de traduction');
+                        }
+                    } catch (translateError) {
+                        console.error("Erreur traduction:", translateError);
+                        synthesisMalagasy.innerHTML = `
+                            <div style="color: #ff6b6b; font-style: italic;">
+                                ⚠️ La traduction a échoué. La synthèse française est disponible ci-dessus.
+                            </div>
+                        `;
+                    }
+                }
 
             } catch (error) {
                 showError(error.message);
@@ -412,14 +451,17 @@
         });
 
         function displayResults(data) {
+            // Debug : afficher toutes les données reçues
+            console.log("📦 Affichage des résultats");
+
             // Afficher la requête
             queryDisplay.textContent = `Recherche : "${data.query}"`;
 
             // Afficher la synthèse française
             synthesisContent.textContent = data.synthesis;
 
-            // Afficher la synthèse malgache
-            synthesisMalagasy.textContent = data.synthesis_malagasy;
+            // La traduction malgache sera affichée par le code d'appel
+            // (pas besoin de la gérer ici car elle arrive en 2ème temps)
 
             // Afficher les versets si demandé
             if (data.verses && data.verses.length > 0) {
