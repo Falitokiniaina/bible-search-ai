@@ -3,6 +3,7 @@
 """
 Interface Web pour la recherche biblique avec synthèse IA
 Utilise Flask pour le backend et une interface moderne en HTML/CSS/JS
+Version avec Qdrant Cloud
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -14,8 +15,12 @@ import os
 COHERE_API_KEY = "wmJt4hjoKPb73nYu6aYs0juZ837vlurSxaRVc5I0"
 COHERE_EMBEDDING_MODEL = "embed-multilingual-v3.0"
 COHERE_GENERATION_MODEL = "command-r-08-2024"
-QDRANT_HOST = "localhost"
-QDRANT_PORT = 6333
+
+# Configuration Qdrant Cloud
+QDRANT_URL = os.environ.get('QDRANT_URL',
+                            'https://93e9e040-840e-4a40-bab0-4d3074ccea48.europe-west3-0.gcp.cloud.qdrant.io')
+QDRANT_API_KEY = os.environ.get('QDRANT_API_KEY',
+                                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.-Byh88ThNz3_9eHw_guu2TPzfbWe56DVSnl8nVAFrT8')
 COLLECTION_NAME = "bible_verses"
 
 # Initialiser Flask
@@ -23,10 +28,6 @@ app = Flask(__name__)
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
-#qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
-QDRANT_URL = os.environ.get('QDRANT_URL', 'https://93e9e040-840e-4a40-bab0-4d3074ccea48.europe-west3-0.gcp.cloud.qdrant.io')
-QDRANT_API_KEY = os.environ.get('QDRANT_API_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.-Byh88ThNz3_9eHw_guu2TPzfbWe56DVSnl8nVAFrT8')
-
 qdrant_client = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY
@@ -90,7 +91,8 @@ Synthèse :"""
 
 def translate_to_malagasy(french_text):
     """Traduit la synthèse en malgache"""
-    prompt = f"""Tu es un traducteur expert français-malgache.
+    try:
+        prompt = f"""Tu es un traducteur expert français-malgache.
 
 Traduis le texte suivant en malgache (langue de Madagascar).
 Garde les références bibliques en format original (exemple: Genèse 1:1).
@@ -101,14 +103,18 @@ Texte en français :
 
 Traduction en malgache :"""
 
-    response = co.chat(
-        model=COHERE_GENERATION_MODEL,
-        message=prompt,
-        temperature=0.3,
-        max_tokens=1000
-    )
+        response = co.chat(
+            model=COHERE_GENERATION_MODEL,
+            message=prompt,
+            temperature=0.3,
+            max_tokens=1500
+        )
 
-    return response.text
+        return response.text
+
+    except Exception as e:
+        print(f"❌ Erreur traduction malgache: {e}")
+        return f"Erreur de traduction: {str(e)}"
 
 
 @app.route('/')
@@ -130,10 +136,13 @@ def search():
             return jsonify({'error': 'Veuillez entrer une recherche'}), 400
 
         # Rechercher les versets
+        print(f"🔍 Recherche: '{query}' (top_k={top_k})")
         results = search_verses(query, top_k)
 
         if not results:
             return jsonify({'error': 'Aucun verset trouvé pour cette recherche'}), 404
+
+        print(f"✅ {len(results)} versets trouvés")
 
         # Formater les versets
         verses = []
@@ -144,18 +153,27 @@ def search():
                 'score': round(result.score, 4)
             })
 
-        # Générer la synthèse
+        # Générer la synthèse en français
+        print("🔄 Génération de la synthèse française...")
         synthesis = generate_synthesis(query, results)
+        print(f"✅ Synthèse française générée ({len(synthesis)} caractères)")
+
+        # Traduire en malgache
+        print("🔄 Traduction en malgache...")
+        synthesis_malagasy = translate_to_malagasy(synthesis)
+        print(f"✅ Traduction malgache générée ({len(synthesis_malagasy) if synthesis_malagasy else 0} caractères)")
 
         return jsonify({
             'success': True,
             'query': query,
             'synthesis': synthesis,
+            'synthesis_malagasy': synthesis_malagasy,
             'verses': verses if show_verses else [],
             'total_verses': len(verses)
         })
 
     except Exception as e:
+        print(f"❌ Erreur dans /search: {e}")
         return jsonify({'error': f'Erreur: {str(e)}'}), 500
 
 
@@ -168,7 +186,8 @@ def health():
         return jsonify({
             'status': 'ok',
             'collection': COLLECTION_NAME,
-            'points_count': collection_info.points_count
+            'points_count': collection_info.points_count,
+            'qdrant_url': QDRANT_URL.split('@')[-1] if '@' in QDRANT_URL else QDRANT_URL
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -178,11 +197,17 @@ if __name__ == '__main__':
     # Créer le dossier templates s'il n'existe pas
     os.makedirs('templates', exist_ok=True)
 
+    # Récupérer le port
+    port = int(os.environ.get('PORT', 5000))
+
+    # Afficher les informations de démarrage
     print("=" * 80)
     print("🌐 Interface Web - Recherche Biblique")
     print("=" * 80)
-    print(f"📍 Serveur démarré sur http://localhost:5000")
+    print(f"📍 Serveur démarré sur http://0.0.0.0:{port}")
     print(f"📊 Collection Qdrant: {COLLECTION_NAME}")
+    print(f"☁️  Qdrant Cloud: {QDRANT_URL[:50]}...")
     print("=" * 80)
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Lancer l'application
+    app.run(host='0.0.0.0', port=port)
