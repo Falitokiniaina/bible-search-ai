@@ -9,7 +9,7 @@ Version avec Qdrant Cloud
 from flask import Flask, render_template, request, jsonify
 import cohere
 from qdrant_client import QdrantClient
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 import os
 
 # Configuration
@@ -29,7 +29,6 @@ app = Flask(__name__)
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
-translator = Translator()
 qdrant_client = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY
