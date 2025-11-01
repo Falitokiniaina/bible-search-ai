@@ -158,10 +158,14 @@ def search():
         synthesis = generate_synthesis(query, results)
         print(f"✅ Synthèse française générée ({len(synthesis)} caractères)")
 
-        # Traduire en malgache
+        # Traduire en malgache avec timeout
         print("🔄 Traduction en malgache...")
-        synthesis_malagasy = translate_to_malagasy(synthesis)
-        print(f"✅ Traduction malgache générée ({len(synthesis_malagasy) if synthesis_malagasy else 0} caractères)")
+        try:
+            synthesis_malagasy = translate_to_malagasy(synthesis)
+            print(f"✅ Traduction malgache générée ({len(synthesis_malagasy) if synthesis_malagasy else 0} caractères)")
+        except Exception as e:
+            print(f"⚠️ Erreur traduction (timeout?): {e}")
+            synthesis_malagasy = "Traduction temporairement indisponible. Réessayez dans quelques instants."
 
         return jsonify({
             'success': True,
