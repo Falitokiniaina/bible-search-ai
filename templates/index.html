@@ -626,6 +626,12 @@
                     body: JSON.stringify({ query, top_k: topK, show_verses: showVerses })
                 });
 
+                // Vérifier si la réponse est du JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Le serveur a rencontré une erreur (502 Bad Gateway). Veuillez réessayer dans quelques instants.');
+                }
+
                 const data = await response.json();
 
                 if (!response.ok) {
@@ -647,7 +653,8 @@
                 displayResults(data);
 
             } catch (error) {
-                showError(error.message);
+                console.error("Erreur complète:", error);
+                showError(error.message || "Erreur de connexion au serveur");
             } finally {
                 loading.style.display = 'none';
                 searchBtn.disabled = false;
