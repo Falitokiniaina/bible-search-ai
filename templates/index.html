@@ -226,6 +226,27 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 30px;
             height: fit-content;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar personnalisée pour la synthèse */
+        .synthesis-card::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .synthesis-card::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .synthesis-card::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .synthesis-card::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
         }
 
         .malagasy-toggle-container {
