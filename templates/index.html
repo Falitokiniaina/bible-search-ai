@@ -158,12 +158,112 @@
             display: none;
         }
 
+        .results-layout {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .results-column {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Layout mobile : slides */
+        @media (max-width: 968px) {
+            .results-layout {
+                flex-direction: column;
+                position: relative;
+            }
+
+            .results-column {
+                display: none;
+            }
+
+            .results-column.active {
+                display: block;
+            }
+
+            .slide-navigation {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .slide-btn {
+                padding: 10px 20px;
+                background: white;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                color: #667eea;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .slide-btn.active {
+                background: #667eea;
+                color: white;
+            }
+        }
+
+        /* Desktop : masquer la navigation slides */
+        @media (min-width: 969px) {
+            .slide-navigation {
+                display: none;
+            }
+
+            .results-column {
+                display: block !important;
+            }
+        }
+
         .synthesis-card {
             background: white;
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 30px;
+            height: fit-content;
+        }
+
+        .malagasy-toggle-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .malagasy-content {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #667eea;
+        }
+
+        .malagasy-content.visible {
+            display: block;
         }
 
         .synthesis-header {
@@ -196,6 +296,28 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            height: fit-content;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar personnalisée */
+        .verses-card::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .verses-card::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .verses-card::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .verses-card::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
         }
 
         .verses-header {
@@ -328,29 +450,52 @@
         </div>
 
         <div class="results" id="results">
-            <div class="synthesis-card">
-                <div class="synthesis-header">
-                    <span class="synthesis-icon">🤖</span>
-                    <h2 class="synthesis-title">Synthèse IA (Français)</h2>
-                </div>
-                <div class="query-display" id="queryDisplay"></div>
-                <div class="synthesis-content" id="synthesisContent"></div>
+            <!-- Navigation slides (mobile seulement) -->
+            <div class="slide-navigation">
+                <button class="slide-btn active" onclick="showSlide('synthesis')">📝 Synthèse</button>
+                <button class="slide-btn" onclick="showSlide('verses')">📚 Versets</button>
             </div>
 
-            <div class="synthesis-card">
-                <div class="synthesis-header">
-                    <span class="synthesis-icon">🇲🇬</span>
-                    <h2 class="synthesis-title">Fandikana amin'ny teny Malagasy</h2>
-                </div>
-                <div class="synthesis-content" id="synthesisMalagasy"></div>
-            </div>
+            <!-- Layout 2 colonnes (desktop) / Slides (mobile) -->
+            <div class="results-layout">
+                <!-- Colonne gauche : Synthèse -->
+                <div class="results-column active" id="synthesisColumn">
+                    <div class="synthesis-card">
+                        <div class="synthesis-header">
+                            <span class="synthesis-icon">🤖</span>
+                            <h2 class="synthesis-title">Synthèse IA</h2>
+                        </div>
+                        <div class="query-display" id="queryDisplay"></div>
+                        <div class="synthesis-content" id="synthesisContent"></div>
 
-            <div class="verses-card" id="versesCard" style="display: none;">
-                <div class="verses-header">
-                    <span class="synthesis-icon">📚</span>
-                    <h2 class="synthesis-title">Versets trouvés (<span id="versesCount">0</span>)</h2>
+                        <!-- Section traduction malgache avec toggle -->
+                        <div class="malagasy-toggle-container">
+                            <button class="toggle-btn" id="toggleMalagasyBtn" onclick="toggleMalagasyTranslation()">
+                                🇲🇬 Traduire en Malgache
+                            </button>
+                            <div class="malagasy-content" id="malagasyContent">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <span class="synthesis-icon">🇲🇬</span>
+                                    <h3 style="margin: 0; color: #667eea;">Fandikana amin'ny teny Malagasy</h3>
+                                </div>
+                                <div class="synthesis-content" id="synthesisMalagasy">
+                                    <em style="color: #999;">⏳ Traduction en cours...</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div id="versesList"></div>
+
+                <!-- Colonne droite : Versets -->
+                <div class="results-column" id="versesColumn">
+                    <div class="verses-card" id="versesCard">
+                        <div class="verses-header">
+                            <span class="synthesis-icon">📚</span>
+                            <h2 class="synthesis-title">Versets trouvés (<span id="versesCount">0</span>)</h2>
+                        </div>
+                        <div id="versesList"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -370,6 +515,88 @@
         const versesCard = document.getElementById('versesCard');
         const versesCount = document.getElementById('versesCount');
         const queryDisplay = document.getElementById('queryDisplay');
+        const malagasyContent = document.getElementById('malagasyContent');
+        const toggleMalagasyBtn = document.getElementById('toggleMalagasyBtn');
+
+        let currentSynthesis = ''; // Stocke la synthèse pour la traduction
+        let isTranslated = false; // Track si déjà traduit
+        let isTranslating = false; // Track si traduction en cours
+
+        // Fonction pour toggle la traduction malgache
+        async function toggleMalagasyTranslation() {
+            const isVisible = malagasyContent.classList.contains('visible');
+
+            if (isVisible) {
+                // Masquer
+                malagasyContent.classList.remove('visible');
+                toggleMalagasyBtn.innerHTML = '🇲🇬 Traduire en Malgache';
+            } else {
+                // Afficher
+                malagasyContent.classList.add('visible');
+                toggleMalagasyBtn.innerHTML = '❌ Masquer la traduction';
+
+                // Si pas encore traduit, lancer la traduction
+                if (!isTranslated && !isTranslating && currentSynthesis) {
+                    await translateToMalagasy(currentSynthesis);
+                }
+            }
+        }
+
+        // Fonction pour traduire en malgache
+        async function translateToMalagasy(text) {
+            if (isTranslating) return;
+
+            isTranslating = true;
+            synthesisMalagasy.innerHTML = '<em style="color: #999;">⏳ Traduction en cours...</em>';
+
+            try {
+                const translateResponse = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const translateData = await translateResponse.json();
+
+                if (translateResponse.ok && translateData.translation) {
+                    console.log("🇲🇬 Traduction reçue");
+                    synthesisMalagasy.textContent = translateData.translation;
+                    isTranslated = true;
+                } else {
+                    throw new Error(translateData.error || 'Erreur de traduction');
+                }
+            } catch (translateError) {
+                console.error("Erreur traduction:", translateError);
+                synthesisMalagasy.innerHTML = `
+                    <div style="color: #ff6b6b; font-style: italic;">
+                        ⚠️ La traduction a échoué. Veuillez réessayer.
+                    </div>
+                `;
+            } finally {
+                isTranslating = false;
+            }
+        }
+
+        // Fonction pour navigation slides (mobile)
+        function showSlide(slide) {
+            const synthesisColumn = document.getElementById('synthesisColumn');
+            const versesColumn = document.getElementById('versesColumn');
+            const slideBtns = document.querySelectorAll('.slide-btn');
+
+            slideBtns.forEach(btn => btn.classList.remove('active'));
+
+            if (slide === 'synthesis') {
+                synthesisColumn.classList.add('active');
+                versesColumn.classList.remove('active');
+                slideBtns[0].classList.add('active');
+            } else {
+                synthesisColumn.classList.remove('active');
+                versesColumn.classList.add('active');
+                slideBtns[1].classList.add('active');
+            }
+        }
 
         searchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -407,40 +634,17 @@
 
                 console.log("📦 Données reçues (étape 1):", data);
 
+                // Stocker la synthèse pour la traduction ultérieure
+                currentSynthesis = data.synthesis;
+                isTranslated = false;
+
+                // Réinitialiser l'état de la traduction
+                malagasyContent.classList.remove('visible');
+                toggleMalagasyBtn.innerHTML = '🇲🇬 Traduire en Malgache';
+                synthesisMalagasy.innerHTML = '<em style="color: #999;">⏳ Cliquez sur le bouton ci-dessus pour traduire</em>';
+
                 // Afficher les résultats immédiatement (sans traduction)
                 displayResults(data);
-
-                // ÉTAPE 2 : Traduction en malgache (en arrière-plan)
-                if (data.synthesis) {
-                    // Afficher un message de chargement pour la traduction
-                    synthesisMalagasy.innerHTML = '<em style="color: #999;">⏳ Traduction en cours...</em>';
-
-                    try {
-                        const translateResponse = await fetch('/translate', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ text: data.synthesis })
-                        });
-
-                        const translateData = await translateResponse.json();
-
-                        if (translateResponse.ok && translateData.translation) {
-                            console.log("🇲🇬 Traduction reçue");
-                            synthesisMalagasy.textContent = translateData.translation;
-                        } else {
-                            throw new Error(translateData.error || 'Erreur de traduction');
-                        }
-                    } catch (translateError) {
-                        console.error("Erreur traduction:", translateError);
-                        synthesisMalagasy.innerHTML = `
-                            <div style="color: #ff6b6b; font-style: italic;">
-                                ⚠️ La traduction a échoué. La synthèse française est disponible ci-dessus.
-                            </div>
-                        `;
-                    }
-                }
 
             } catch (error) {
                 showError(error.message);
@@ -460,12 +664,8 @@
             // Afficher la synthèse française
             synthesisContent.textContent = data.synthesis;
 
-            // La traduction malgache sera affichée par le code d'appel
-            // (pas besoin de la gérer ici car elle arrive en 2ème temps)
-
-            // Afficher les versets si demandé
+            // Afficher les versets
             if (data.verses && data.verses.length > 0) {
-                versesCard.style.display = 'block';
                 versesCount.textContent = data.verses.length;
 
                 versesList.innerHTML = data.verses.map(verse => `
@@ -478,10 +678,15 @@
                     </div>
                 `).join('');
             } else {
-                versesCard.style.display = 'none';
+                versesCount.textContent = 0;
+                versesList.innerHTML = '<p style="color: #999; text-align: center;">Aucun verset à afficher</p>';
             }
 
             results.style.display = 'block';
+
+            // Réinitialiser la navigation slides sur mobile
+            showSlide('synthesis');
+
             results.scrollIntoView({ behavior: 'smooth' });
         }
 
