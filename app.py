@@ -9,6 +9,7 @@ Version avec Qdrant Cloud
 from flask import Flask, render_template, request, jsonify
 import cohere
 from qdrant_client import QdrantClient
+from googletrans import Translator
 import os
 
 # Configuration
@@ -28,6 +29,7 @@ app = Flask(__name__)
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
+translator = Translator()
 qdrant_client = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY
@@ -83,7 +85,7 @@ Synthèse :"""
         model=COHERE_GENERATION_MODEL,
         message=prompt,
         temperature=0.3,
-        max_tokens=1000
+        max_tokens=800  # Réduit de 1000 à 800 pour accélérer
     )
 
     return response.text
@@ -107,7 +109,7 @@ Traduction en malgache :"""
             model=COHERE_GENERATION_MODEL,
             message=prompt,
             temperature=0.3,
-            max_tokens=1500
+            max_tokens=1200  # Réduit de 1500 à 1200
         )
 
         return response.text
@@ -211,6 +213,48 @@ def health():
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/robots.txt')
+def robots():
+    """Serve robots.txt for SEO"""
+    return """User-agent: *
+Allow: /
+Disallow: /static/
+Disallow: /admin/
+
+Sitemap: https://bible-search-ai.onrender.com/sitemap.xml
+
+Crawl-delay: 1
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /""", 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Serve sitemap.xml for SEO"""
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://bible-search-ai.onrender.com/</loc>
+        <lastmod>2025-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://bible-search-ai.onrender.com/health</loc>
+        <lastmod>2025-11-01</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.3</priority>
+    </url>
+</urlset>""", 200, {'Content-Type': 'application/xml; charset=utf-8'}
 
 
 if __name__ == '__main__':
