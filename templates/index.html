@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recherche Biblique - IA</title>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZ32C39908"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-NZ32C39908');
+
+        // Track recherches
+        function trackSearch(query) {
+            gtag('event', 'search', {
+                'search_term': query
+            });
+        }
+
+        // Track traduction
+        function trackTranslation() {
+            gtag('event', 'translate', {
+                'event_category': 'interaction',
+                'event_label': 'Malagasy Translation'
+            });
+        }
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -728,6 +753,11 @@
                 malagasyContent.classList.add('visible');
                 toggleMalagasyBtn.innerHTML = '❌ Masquer la traduction';
 
+                // Track dans Google Analytics
+                if (typeof trackTranslation === 'function') {
+                    trackTranslation();
+                }
+
                 // Si pas encore traduit, lancer la traduction
                 if (!isTranslated && !isTranslating && currentSynthesis) {
                     await translateToMalagasy(currentSynthesis);
@@ -822,7 +852,8 @@
                 // Vérifier si la réponse est du JSON
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Le serveur a rencontré une erreur (502 Bad Gateway). Veuillez réessayer dans quelques instants.');
+                    console.error('Réponse non-JSON reçue:', response.status);
+                    throw new Error('Le serveur a rencontré une erreur (502). Cela peut être dû à un timeout. Veuillez réessayer avec moins de versets ou attendez quelques instants.');
                 }
 
                 const data = await response.json();
@@ -832,6 +863,11 @@
                 }
 
                 console.log("📦 Données reçues (étape 1):", data);
+
+                // Track la recherche dans Google Analytics
+                if (typeof trackSearch === 'function') {
+                    trackSearch(query);
+                }
 
                 // Stocker la synthèse pour la traduction ultérieure
                 currentSynthesis = data.synthesis;
