@@ -265,6 +265,12 @@ def bing_verification():
 </users>"""
     return xml_content, 200, {'Content-Type': 'application/xml; charset=utf-8'}
 
+@app.route('/googlecdf45738476f5de6.html')
+def google_verification():
+    """Google Search Console verification file"""
+    return "google-site-verification: googlecdf45738476f5de6.html", 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+
 if __name__ == '__main__':
     # Créer le dossier templates s'il n'existe pas
     os.makedirs('templates', exist_ok=True)
