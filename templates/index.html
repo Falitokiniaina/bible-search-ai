@@ -4,31 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recherche Biblique - IA</title>
-
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZ32C39908"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-NZ32C39908');
-
-        // Track recherches
-        function trackSearch(query) {
-            gtag('event', 'search', {
-                'search_term': query
-            });
-        }
-
-        // Track traduction
-        function trackTranslation() {
-            gtag('event', 'translate', {
-                'event_category': 'interaction',
-                'event_label': 'Malagasy Translation'
-            });
-        }
-    </script>
-
     <style>
         * {
             margin: 0;
@@ -58,6 +33,40 @@
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
         }
 
         .subtitle {
@@ -382,11 +391,47 @@
             margin-bottom: 15px;
             border-left: 4px solid #667eea;
             transition: transform 0.2s;
+            position: relative;
         }
 
         .verse-item:hover {
             transform: translateX(5px);
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .verse-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .action-btn.favorited {
+            background: #ffd700;
+            border-color: #ffd700;
+            color: white;
         }
 
         .verse-reference {
@@ -561,14 +606,142 @@
             background: #764ba2;
             transform: translateY(-2px);
         }
+
+        /* Favoris Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .export-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .export-btn:hover {
+            background: #764ba2;
+        }
+
+        .empty-favorites {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .favorite-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .favorite-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .remove-favorite {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .remove-favorite:hover {
+            background: #ee5555;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📖 Recherche Biblique avec IA</h1>
+            <h1>
+                📖 Recherche Biblique avec IA
+            </h1>
             <p class="subtitle">Explorez la Bible avec l'aide de l'intelligence artificielle</p>
+            <div class="header-nav">
+                <button class="nav-btn active" onclick="showPage('search')">🔍 Recherche</button>
+                <button class="nav-btn" onclick="showPage('favorites')">⭐ Favoris <span class="badge" id="favoritesCount">0</span></button>
+            </div>
         </header>
+
+        <div id="searchPage">
 
         <div class="search-card">
             <form class="search-form" id="searchForm">
@@ -660,6 +833,18 @@
         </div>
     </div>
 
+    <!-- Modal Favoris -->
+    <div id="favoritesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFavorites()">&times;</span>
+            <div class="favorites-header">
+                <h2>⭐ Mes Versets Favoris</h2>
+                <button class="export-btn" onclick="exportFavorites()">📄 Exporter en PDF</button>
+            </div>
+            <div id="favoritesList"></div>
+        </div>
+    </div>
+
     <!-- Footer Compact -->
     <footer>
         <div class="footer-content">
@@ -739,6 +924,138 @@
         let currentSynthesis = ''; // Stocke la synthèse pour la traduction
         let isTranslated = false; // Track si déjà traduit
         let isTranslating = false; // Track si traduction en cours
+
+        // Gestion des favoris
+        function getFavorites() {
+            const favorites = localStorage.getItem('bibleFavorites');
+            return favorites ? JSON.parse(favorites) : [];
+        }
+
+        function saveFavorites(favorites) {
+            localStorage.setItem('bibleFavorites', JSON.stringify(favorites));
+            updateFavoritesCount();
+        }
+
+        function updateFavoritesCount() {
+            const favorites = getFavorites();
+            document.getElementById('favoritesCount').textContent = favorites.length;
+        }
+
+        function toggleFavorite(reference, text) {
+            const favorites = getFavorites();
+            const index = favorites.findIndex(f => f.reference === reference);
+
+            if (index > -1) {
+                // Retirer des favoris
+                favorites.splice(index, 1);
+            } else {
+                // Ajouter aux favoris
+                favorites.push({
+                    reference: reference,
+                    text: text,
+                    addedAt: new Date().toISOString()
+                });
+            }
+
+            saveFavorites(favorites);
+            return index === -1; // Retourne true si ajouté
+        }
+
+        function isFavorite(reference) {
+            const favorites = getFavorites();
+            return favorites.some(f => f.reference === reference);
+        }
+
+        function showPage(page) {
+            // Mise à jour des boutons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (page === 'favorites') {
+                openFavorites();
+            }
+        }
+
+        function openFavorites() {
+            const modal = document.getElementById('favoritesModal');
+            const favoritesList = document.getElementById('favoritesList');
+            const favorites = getFavorites();
+
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = `
+                    <div class="empty-favorites">
+                        <h3>Aucun verset favori</h3>
+                        <p>Cliquez sur l'étoile ⭐ à côté d'un verset pour l'ajouter à vos favoris</p>
+                    </div>
+                `;
+            } else {
+                favoritesList.innerHTML = favorites.map(fav => `
+                    <div class="favorite-item">
+                        <div class="favorite-item-header">
+                            <strong style="color: #667eea;">${fav.reference}</strong>
+                            <button class="remove-favorite" onclick="removeFavorite('${fav.reference}')">🗑️ Supprimer</button>
+                        </div>
+                        <div>${fav.text}</div>
+                        <small style="color: #999;">Ajouté le ${new Date(fav.addedAt).toLocaleDateString('fr-FR')}</small>
+                    </div>
+                `).join('');
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeFavorites() {
+            document.getElementById('favoritesModal').style.display = 'none';
+        }
+
+        function removeFavorite(reference) {
+            if (confirm('Voulez-vous vraiment retirer ce verset de vos favoris ?')) {
+                const favorites = getFavorites();
+                const filtered = favorites.filter(f => f.reference !== reference);
+                saveFavorites(filtered);
+                openFavorites(); // Rafraîchir la liste
+            }
+        }
+
+        function exportFavorites() {
+            const favorites = getFavorites();
+            if (favorites.length === 0) {
+                alert('Aucun favori à exporter');
+                return;
+            }
+
+            // Créer un contenu texte
+            let content = '📖 MES VERSETS FAVORIS - Bible Search AI\n';
+            content += '=' .repeat(60) + '\n\n';
+
+            favorites.forEach(fav => {
+                content += `${fav.reference}\n`;
+                content += `${fav.text}\n`;
+                content += `Ajouté le: ${new Date(fav.addedAt).toLocaleDateString('fr-FR')}\n`;
+                content += '-'.repeat(60) + '\n\n';
+            });
+
+            content += '\nGénéré par https://bible-search-ai.onrender.com';
+
+            // Télécharger en .txt
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `favoris-bibliques-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            alert('✅ Favoris exportés avec succès !');
+        }
+
+        // Fermer le modal en cliquant dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('favoritesModal');
+            if (event.target === modal) {
+                closeFavorites();
+            }
+        }
 
         // Fonction pour toggle la traduction malgache
         async function toggleMalagasyTranslation() {
@@ -933,6 +1250,23 @@
 
         // Focus sur l'input au chargement
         queryInput.focus();
+
+        // Initialiser le compteur de favoris
+        updateFavoritesCount();
+
+        // Ajouter les animations CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
