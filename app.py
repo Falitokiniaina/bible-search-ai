@@ -521,4 +521,4 @@ if __name__ == '__main__':
     print("=" * 80)
 
     # Lancer l'application
-    app.run(host='0.0.0.0', port=por
+    app.run(host='0.0.0.0', port=port)
