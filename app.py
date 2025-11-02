@@ -25,7 +25,7 @@ QDRANT_API_KEY = os.environ.get('QDRANT_API_KEY',
 COLLECTION_NAME = "bible_verses"
 
 # Initialiser Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Initialiser les clients (globaux pour éviter de les recréer à chaque requête)
 co = cohere.Client(COHERE_API_KEY)
@@ -255,6 +255,15 @@ def sitemap():
     </url>
 </urlset>""", 200, {'Content-Type': 'application/xml; charset=utf-8'}
 
+@app.route('/BingSiteAuth.xml')
+def bing_verification():
+    """Bing Webmaster Tools verification file"""
+    # Copiez le contenu exact du fichier que Bing vous a fourni
+    xml_content = """<?xml version="1.0"?>
+<users>
+    <user>C3C8E7B19260FF3B7227C09FD8578406</user>
+</users>"""
+    return xml_content, 200, {'Content-Type': 'application/xml; charset=utf-8'}
 
 if __name__ == '__main__':
     # Créer le dossier templates s'il n'existe pas
